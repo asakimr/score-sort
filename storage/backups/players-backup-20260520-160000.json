@@ -1,0 +1,141 @@
+{
+  "exported_at": "2026-05-20T16:00:00-03:00",
+  "source": "storage/database.sqlite",
+  "players": [
+    {
+      "id": 1,
+      "name": "Paulo Gabriel",
+      "rating": 2.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 14:57:52",
+      "updated_at": "2026-05-20 14:57:52"
+    },
+    {
+      "id": 2,
+      "name": "Iago Santos",
+      "rating": 4.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 14:58:35",
+      "updated_at": "2026-05-20 14:58:35"
+    },
+    {
+      "id": 3,
+      "name": "José Almir",
+      "rating": 4.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 14:58:54",
+      "updated_at": "2026-05-20 15:42:42"
+    },
+    {
+      "id": 4,
+      "name": "Emival",
+      "rating": 3.5,
+      "is_goalkeeper": 1,
+      "is_active": 1,
+      "created_at": "2026-05-20 14:59:21",
+      "updated_at": "2026-05-20 14:59:21"
+    },
+    {
+      "id": 5,
+      "name": "Guilherme Theo",
+      "rating": 2.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 14:59:44",
+      "updated_at": "2026-05-20 14:59:44"
+    },
+    {
+      "id": 6,
+      "name": "Ilmar",
+      "rating": 4,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 14:59:59",
+      "updated_at": "2026-05-20 14:59:59"
+    },
+    {
+      "id": 7,
+      "name": "Jéferson Alcantara",
+      "rating": 4,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:00:15",
+      "updated_at": "2026-05-20 15:00:15"
+    },
+    {
+      "id": 8,
+      "name": "Dionatam Carniel",
+      "rating": 2.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:00:29",
+      "updated_at": "2026-05-20 15:00:29"
+    },
+    {
+      "id": 9,
+      "name": "Leon Piton",
+      "rating": 2.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:00:46",
+      "updated_at": "2026-05-20 15:00:46"
+    },
+    {
+      "id": 10,
+      "name": "Lucas Assis",
+      "rating": 3.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:00:56",
+      "updated_at": "2026-05-20 15:00:56"
+    },
+    {
+      "id": 11,
+      "name": "Mateus Machado",
+      "rating": 2.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:01:07",
+      "updated_at": "2026-05-20 15:01:07"
+    },
+    {
+      "id": 12,
+      "name": "Sergio Nunes",
+      "rating": 4.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:01:16",
+      "updated_at": "2026-05-20 15:01:16"
+    },
+    {
+      "id": 13,
+      "name": "Sérgio Melo",
+      "rating": 4,
+      "is_goalkeeper": 1,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:01:26",
+      "updated_at": "2026-05-20 15:01:32"
+    },
+    {
+      "id": 14,
+      "name": "Jonatham Bazam",
+      "rating": 3,
+      "is_goalkeeper": 1,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:01:48",
+      "updated_at": "2026-05-20 15:01:48"
+    },
+    {
+      "id": 15,
+      "name": "Matheus Moradillo",
+      "rating": 4.5,
+      "is_goalkeeper": 0,
+      "is_active": 1,
+      "created_at": "2026-05-20 15:02:33",
+      "updated_at": "2026-05-20 15:02:33"
+    }
+  ]
+}

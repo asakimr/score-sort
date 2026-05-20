@@ -1,0 +1,9 @@
+/vendor/
+/.idea/
+/.vscode/
+/storage/*.sqlite
+/storage/*.sqlite-*
+/storage/logs/*.log
+/node_modules/
+/public/build/
+.env
