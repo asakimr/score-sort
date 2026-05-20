@@ -16,9 +16,7 @@ return static function (App $app): void {
     $app->post('/login', [AuthController::class, 'login']);
     $app->post('/logout', [AuthController::class, 'logout']);
 
-    $app->get('/peladas/{id}', [SessionController::class, 'show']);
-
-    $app->group('', static function ($group): void {
+    $app->group('', function ($group): void {
         $group->get('/jogadores', [PlayerController::class, 'index']);
         $group->post('/jogadores', [PlayerController::class, 'store']);
         $group->get('/jogadores/{id}/editar', [PlayerController::class, 'index']);
@@ -30,4 +28,6 @@ return static function (App $app): void {
         $group->post('/peladas/{id}/resortear', [SessionController::class, 'resort']);
         $group->post('/peladas/{id}/partidas/finalizar', [SessionController::class, 'finishMatch']);
     })->add(SupervisorMiddleware::class);
+
+    $app->get('/peladas/{id:[0-9]+}', [SessionController::class, 'show']);
 };

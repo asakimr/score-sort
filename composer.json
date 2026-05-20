@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "start": "php -S localhost:8500 -t public",
+    "start": "php -S 0.0.0.0:8500 -t public",
     "backup-players": "php bin/backup_players.php",
     "reset-tests": "php bin/reset_sessions.php",
     "create-supervisor": "php bin/create_supervisor.php",
