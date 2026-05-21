@@ -6,6 +6,17 @@ namespace App\Services;
 
 final class TeamDrawService
 {
+    /**
+     * Regras de separação por nome, não por ID, para sobreviver a troca de banco/servidor.
+     * Mantém também a grafia atual encontrada no cadastro local ("Bazam") como alias defensivo.
+     */
+    private const FORBIDDEN_NAME_PAIRS = [
+        [
+            ['paulo', 'paulo gabriel'],
+            ['jonatham zabham', 'jonatham bazam'],
+        ],
+    ];
+
     public function generate(array $players, int $maxPlayersPerMatch, string $drawMode = 'balanced', bool $prioritizeGoalkeepers = true): array
     {
         $normalizedPlayers = array_values(array_map(
@@ -39,6 +50,8 @@ final class TeamDrawService
         $teams = $drawMode === 'random'
             ? $this->generateRandomTeams($normalizedPlayers, $targets, $prioritizeGoalkeepers)
             : $this->generateBalancedTeams($normalizedPlayers, $targets, $prioritizeGoalkeepers);
+
+        $teams = $this->enforceForbiddenNamePairs($teams);
 
         foreach ($teams as &$team) {
             usort($team['players'], static function (array $left, array $right): int {
@@ -420,6 +433,172 @@ final class TeamDrawService
         }
 
         return $score;
+    }
+
+    private function enforceForbiddenNamePairs(array $teams): array
+    {
+        foreach (self::FORBIDDEN_NAME_PAIRS as $forbiddenPair) {
+            $teams = $this->separateForbiddenNamePair($teams, $forbiddenPair[0], $forbiddenPair[1]);
+        }
+
+        return $teams;
+    }
+
+    private function separateForbiddenNamePair(array $teams, array $leftAliases, array $rightAliases): array
+    {
+        $leftLocation = $this->findPlayerLocationByName($teams, $leftAliases);
+        $rightLocation = $this->findPlayerLocationByName($teams, $rightAliases);
+
+        if ($leftLocation === null || $rightLocation === null || $leftLocation['team_index'] !== $rightLocation['team_index']) {
+            return $teams;
+        }
+
+        $sourceTeamIndex = (int) $leftLocation['team_index'];
+        $rightPlayerIndex = (int) $rightLocation['player_index'];
+        $rightPlayer = $teams[$sourceTeamIndex]['players'][$rightPlayerIndex];
+
+        $swap = $this->findBestForbiddenPairSwap($teams, $sourceTeamIndex, $rightPlayer, $leftAliases, $rightAliases);
+
+        if ($swap !== null) {
+            $targetTeamIndex = (int) $swap['team_index'];
+            $targetPlayerIndex = (int) $swap['player_index'];
+            $targetPlayer = $teams[$targetTeamIndex]['players'][$targetPlayerIndex];
+
+            $teams[$sourceTeamIndex]['players'][$rightPlayerIndex] = $targetPlayer;
+            $teams[$targetTeamIndex]['players'][$targetPlayerIndex] = $rightPlayer;
+            $this->recalculateTeam($teams[$sourceTeamIndex]);
+            $this->recalculateTeam($teams[$targetTeamIndex]);
+
+            return $teams;
+        }
+
+        $availableTeamIndex = $this->findAvailableTeamIndexForForbiddenPair($teams, $sourceTeamIndex, $leftAliases, $rightAliases);
+        if ($availableTeamIndex !== null) {
+            array_splice($teams[$sourceTeamIndex]['players'], $rightPlayerIndex, 1);
+            $teams[$availableTeamIndex]['players'][] = $rightPlayer;
+            $this->recalculateTeam($teams[$sourceTeamIndex]);
+            $this->recalculateTeam($teams[$availableTeamIndex]);
+        }
+
+        return $teams;
+    }
+
+    private function findBestForbiddenPairSwap(array $teams, int $sourceTeamIndex, array $playerToMove, array $leftAliases, array $rightAliases): ?array
+    {
+        $bestSwap = null;
+        $bestScore = null;
+
+        foreach ($teams as $teamIndex => $team) {
+            if ($teamIndex === $sourceTeamIndex || $this->teamHasForbiddenName($team, $leftAliases, $rightAliases)) {
+                continue;
+            }
+
+            foreach ($team['players'] as $playerIndex => $candidate) {
+                if ($this->playerMatchesAnyName($candidate, $leftAliases) || $this->playerMatchesAnyName($candidate, $rightAliases)) {
+                    continue;
+                }
+
+                $score = abs((float) $playerToMove['rating'] - (float) $candidate['rating']);
+                if ((int) $playerToMove['is_goalkeeper'] !== (int) $candidate['is_goalkeeper']) {
+                    $score += 2.0;
+                }
+
+                if ($bestScore === null || $score < $bestScore) {
+                    $bestScore = $score;
+                    $bestSwap = [
+                        'team_index' => $teamIndex,
+                        'player_index' => $playerIndex,
+                    ];
+                }
+            }
+        }
+
+        return $bestSwap;
+    }
+
+    private function findAvailableTeamIndexForForbiddenPair(array $teams, int $sourceTeamIndex, array $leftAliases, array $rightAliases): ?int
+    {
+        foreach ($teams as $teamIndex => $team) {
+            if ($teamIndex === $sourceTeamIndex || $this->teamIsFull($team) || $this->teamHasForbiddenName($team, $leftAliases, $rightAliases)) {
+                continue;
+            }
+
+            return $teamIndex;
+        }
+
+        return null;
+    }
+
+    private function findPlayerLocationByName(array $teams, array $aliases): ?array
+    {
+        foreach ($teams as $teamIndex => $team) {
+            foreach ($team['players'] as $playerIndex => $player) {
+                if ($this->playerMatchesAnyName($player, $aliases)) {
+                    return [
+                        'team_index' => $teamIndex,
+                        'player_index' => $playerIndex,
+                    ];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function teamHasForbiddenName(array $team, array $leftAliases, array $rightAliases): bool
+    {
+        foreach ($team['players'] as $player) {
+            if ($this->playerMatchesAnyName($player, $leftAliases) || $this->playerMatchesAnyName($player, $rightAliases)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function playerMatchesAnyName(array $player, array $aliases): bool
+    {
+        $normalizedName = $this->normalizePlayerName((string) ($player['name'] ?? ''));
+
+        foreach ($aliases as $alias) {
+            $normalizedAlias = $this->normalizePlayerName((string) $alias);
+            if ($normalizedName === $normalizedAlias) {
+                return true;
+            }
+
+            if (str_contains($normalizedAlias, ' ') && str_starts_with($normalizedName, $normalizedAlias . ' ')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function normalizePlayerName(string $name): string
+    {
+        $normalized = trim($name);
+        if (function_exists('iconv')) {
+            $withoutAccents = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalized);
+            if ($withoutAccents !== false) {
+                $normalized = $withoutAccents;
+            }
+        }
+
+        $normalized = strtolower($normalized);
+
+        $normalized = preg_replace('/[^a-z0-9]+/', ' ', $normalized) ?? $normalized;
+
+        return trim(preg_replace('/\s+/', ' ', $normalized) ?? $normalized);
+    }
+
+    private function recalculateTeam(array &$team): void
+    {
+        $team['total_rating'] = array_reduce(
+            $team['players'],
+            static fn (float $total, array $player): float => $total + (float) $player['rating'],
+            0.0
+        );
+        $team['goalkeeper_count'] = $this->countGoalkeepers($team['players']);
     }
 
     private function countGoalkeepers(array $players): int
