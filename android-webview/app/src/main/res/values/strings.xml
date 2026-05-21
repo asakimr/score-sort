@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Pelada Manager</string>
+    <string name="webview_url">http://10.0.2.2:8500</string>
+</resources>
